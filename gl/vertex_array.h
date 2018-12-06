@@ -22,8 +22,7 @@ class VertexArrayAttrib : public NamedObject<GLuint>{
 		size_t offset;
 		size_t stride;
 	public:
-		VertexArrayAttrib(GLuint objectId, GLint size, size_t offset, size_t stride) : NamedObject() {
-			this->objectId = objectId;
+		VertexArrayAttrib(GLuint objectId, GLint size, size_t offset, size_t stride) : NamedObject(objectId) {
 			this->size = size;
 			this->offset = offset;
 			this->stride = stride;
@@ -43,12 +42,37 @@ class VertexArrayAttrib : public NamedObject<GLuint>{
 	class VertexArray : NamedObject<GLuint>{
 
 	private:
-		std::shared_ptr<Buffer> vertexBuffer;
-		std::shared_ptr<Buffer> elementBuffer;
+		ArrayBuffer& vertexBuffer;
+		ArrayBuffer& elementBuffer;
+
 		std::vector<VertexArrayAttrib> vertexArrayAttribs;
 		int numElements;
 
 	public:
+		VertexArray(GLuint objectId,
+				int size,
+				    ArrayBuffer& vertexBuffer, ArrayBuffer& elementBuffer):
+				NamedObject(objectId),
+				vertexBuffer(vertexBuffer),
+				elementBuffer(elementBuffer),
+				numElements(size){}
+
+		VertexArray(VertexArray&& other) noexcept:
+			NamedObject(other.objectId),
+			vertexBuffer(other.vertexBuffer),
+			elementBuffer(other.elementBuffer) {}
+
+		static VertexArray create(std::vector<VertexType> &data, std::vector<ElementType>& elements){
+			GLuint objectId;
+			glGenVertexArrays(1, &objectId);
+			gl::checkErrorAndThrow("glGenVertexArrays");
+			glBindVertexArray(objectId);
+			auto vertexBuffer = ArrayBuffer::create(sizeof(VertexType) * data.size(), BufferUsage::StaticDraw, &data[0]);
+			auto elementBuffer = ArrayBuffer::create(sizeof(ElementType) * elements.size(), BufferUsage::StaticDraw, &elements[0]);
+
+			return VertexArray(objectId, data.size(), vertexBuffer, elementBuffer);
+		}
+
 		int getNumElements() const {
 			return numElements;
 		}
@@ -63,6 +87,8 @@ class VertexArrayAttrib : public NamedObject<GLuint>{
 		}
 		void bind(){
 			glBindVertexArray(objectId);
+			vertexBuffer.bind();
+			gl::checkErrorAndThrow("glBindVertexArray");
 			for(int i = 0; i < vertexArrayAttribs.size(); i++){
 				vertexArrayAttribs[i].enable();
 			}
@@ -75,12 +101,12 @@ class VertexArrayAttrib : public NamedObject<GLuint>{
 			}
 		}
 
-		void defineData(std::vector<VertexType> &data, std::vector<ElementType>& elements){
-			glBindVertexArray(objectId);
-			vertexBuffer = Buffer::create(sizeof(VertexType) * data.size(), GL_STATIC_DRAW, &data[0]);
-			elementBuffer = Buffer::create(sizeof(ElementType) * elements.size(), GL_STATIC_DRAW, &elements[0]);
-			numElements = data.size;
-		}
+//		void defineData(std::vector<VertexType> &data, std::vector<ElementType>& elements){
+//			glBindVertexArray(objectId);
+//			vertexBuffer = Buffer::create(sizeof(VertexType) * data.size(), GL_STATIC_DRAW, &data[0]);
+//			elementBuffer = Buffer::create(sizeof(ElementType) * elements.size(), GL_STATIC_DRAW, &elements[0]);
+//			numElements = data.size();
+//		}
 
 		void addAttrib(GLuint attribId, GLint size, size_t offset){
 			auto stride = sizeof(VertexType);

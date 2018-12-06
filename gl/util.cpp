@@ -123,6 +123,7 @@ GLenum gl::checkError(const char *name) {
 }
 
 void gl::checkErrorAndThrow(const char *name) {
+	std::cout<<"gl: "<<name<<std::endl;
 	auto error = glGetError();
 	if(error != 0){
 		auto message = (std::stringstream() << name << " Gl error: " << error << " " << getErrorString(error)).str();

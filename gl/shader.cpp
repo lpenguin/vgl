@@ -11,13 +11,18 @@ void gl::Shader::bindAttribs(UniformData &data) {
 	isBindedAttribs = true;
 }
 
-std::shared_ptr<gl::Shader> gl::Shader::createShader(const std::string &vertexShaderCode,
+gl::Shader gl::Shader::createShader(const std::string &vertexShaderCode,
                                                           const std::string &fragmentShaderCode) {
 	auto objectId = gl::load_shaders_str(vertexShaderCode, fragmentShaderCode);
-	return std::make_shared<gl::Shader>(objectId);
+	return gl::Shader(objectId);
 }
 
 
 GLint gl::Shader::getAttribute(const std::string &name) const{
 	return glGetUniformLocation(objectId, name.c_str());
+}
+
+void gl::Shader::addTexture(gl::ITexture& texture, const std::string &name) {
+	auto textureAttribute = getAttribute(name);
+	textureAttributes.emplace_back(TextureAttribute(textureAttribute, texture));
 }

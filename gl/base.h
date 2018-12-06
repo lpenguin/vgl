@@ -13,6 +13,8 @@ namespace gl {
 	protected:
 		T objectId;
 	public:
+		explicit NamedObject(T objectId):objectId(objectId) {}
+
 		T getObjectId() const {
 			return objectId;
 		}

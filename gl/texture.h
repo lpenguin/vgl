@@ -8,6 +8,7 @@
 #include "util.h"
 #include "buffer.h"
 #include "vec.h"
+#include "itexture.h"
 
 namespace gl {
 	enum class TextureType : GLenum {
@@ -21,7 +22,8 @@ namespace gl {
 
 
 	enum class TextureInternalFormat : GLenum {
-
+		R8ui = GL_R8UI,
+		RGBA8 = GL_RGBA8,
 	};
 
 	GLenum toGlInternalFormat(TextureInternalFormat internalFormat) {
@@ -29,24 +31,21 @@ namespace gl {
 	}
 
 	enum class TextureFormat : GLenum {
-
+		RedInteger = GL_RED_INTEGER,
+		BGRA = GL_BGRA
 	};
 
 	GLenum toGlFormat(TextureFormat format) {
 		return static_cast<GLenum>(format);
 	}
 
-
 	template<class T, GLenum textureType>
-	class Texture {
+	class Texture : public ITexture{
 	private:
 		GLuint textureId;
 		TextureInternalFormat internalFormat;
 
 		T dimensions;
-
-
-
 	private:
 		static void TexStorage(GLenum internalFormat, const T &dimensions) {
 			throw "Unimplemented";
@@ -60,7 +59,13 @@ namespace gl {
 		Texture(GLuint textureId, TextureInternalFormat internalFormat, const T &dimensions)
 				: textureId(textureId), internalFormat(internalFormat), dimensions(dimensions) {}
 
-		static std::shared_ptr<Texture<T, textureType>>
+		Texture(Texture&& other){
+			textureId = other.textureId;
+			internalFormat = other.internalFormat;
+			std::swap(dimensions, other.dimensions);
+		}
+
+		static Texture<T, textureType>
 		create(TextureInternalFormat internalFormat, const T &dimensions) {
 			auto glInternalFormat = toGlInternalFormat(internalFormat);
 
@@ -73,23 +78,24 @@ namespace gl {
 			checkErrorAndThrow("glGenTextures");
 
 			TexStorage(glInternalFormat, dimensions);
-			return std::make_shared<Texture<T, textureType>>(textureId, internalFormat, dimensions);
+			return Texture<T, textureType>(textureId, internalFormat, dimensions);
 		}
 
-		void subImage(const T &offset, const T &dimensions, TextureFormat format, const Buffer &buffer) {
-			glBindTexture(GL_TEXTURE_2D, textureId);
+		void bind() override {
+			glBindTexture(textureType, textureId);
 			checkErrorAndThrow("glBindTexture");
+		}
 
-			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer.getBufferId());
-			checkErrorAndThrow("glBindBuffer");
+		void subImage(const T &offset, const T &dimensions, TextureFormat format, PixelUnpackBuffer &buffer) {
+			bind();
+			buffer.bind();
 
 			auto glFormat = toGlFormat(format);
 			TexSubImage(offset, dimensions, glFormat, GL_UNSIGNED_BYTE, 0);
 		}
 
 		void subImage(const T &offset, const T &dimensions, TextureFormat format, uint8_t *data) {
-			glBindTexture(GL_TEXTURE_2D, textureId);
-			checkErrorAndThrow("glBindTexture");
+			bind();
 
 			auto glFormat = toGlFormat(format);
 			TexSubImage(offset, dimensions, glFormat, GL_UNSIGNED_BYTE, data);
@@ -99,8 +105,9 @@ namespace gl {
 			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		}
 
-		void free() {
+		void free() override {
 			glDeleteTextures(1, &textureId);
+			checkErrorAndThrow("glDeleteTextures");
 		}
 
 
@@ -132,9 +139,9 @@ namespace gl {
 	template <>
 	void Texture<uiVec3, GL_TEXTURE_2D_ARRAY>::TexSubImage(const uiVec3 &offset, const uiVec3 &dimensions, GLenum format, GLenum type, GLvoid *data) {
 		glTexSubImage3D(
-				GL_TEXTURE_2D, 0,
+				GL_TEXTURE_2D_ARRAY, 0,
 				offset.x, offset.y, offset.z,
-				dimensions.width, dimensions.width, dimensions.height,
+				dimensions.width, dimensions.height, dimensions.depth,
 				format, type, data);
 		checkErrorAndThrow("glTexSubImage2D");
 	}

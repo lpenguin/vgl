@@ -39,7 +39,8 @@ long long int nowMillis() {
 
 void benchmarkFormat(const gl::uiVec2& dimensions, unsigned int pixelSize,
                      const gl::uiVec2& updateDimensions,
-                     gl::TextureInternalFormat internalFormat, gl::TextureFormat format, int numFrames) {
+                     gl::TextureInternalFormat internalFormat, gl::TextureFormat format,
+                     int numFrames) {
 	auto texture = gl::Texture2D::create(internalFormat, dimensions);
 
 	size_t pixelsLength = pixelSize * updateDimensions.width * updateDimensions.height;
@@ -48,7 +49,7 @@ void benchmarkFormat(const gl::uiVec2& dimensions, unsigned int pixelSize,
 
 	auto startMs = nowMillis();
 	for (int i = 0; i < numFrames; i++) {
-		texture->subImage(
+		texture.subImage(
 			{0, 0},
 			updateDimensions,
 			format,
@@ -71,7 +72,7 @@ void benchmarkFormat(const gl::uiVec2& dimensions, unsigned int pixelSize,
 	std::cout << "Frames/sec: " << framePerSecond << ", bytes/sec: " << bytesPerSecond << ", Gbytes/sec: "
 	          << gbPerSecond << std::endl;
 
-	texture->free();
+	texture.free();
 
 }
 //
@@ -131,60 +132,44 @@ void benchmarkFormat(const gl::uiVec2& dimensions, unsigned int pixelSize,
 //
 //}
 //
-//void benchmarkFormat2DArray(unsigned int textureWidth, unsigned int textureHeight, unsigned int textureDepth,
-//                            unsigned int pixelSize,
-//                            unsigned int updateWidth, unsigned int updateHeight,
-//                            GLenum internalformat, GLenum format, int numFrames) {
-//	GLuint textureID;
-//
-//	glGenTextures(1, &textureID);
-//
-//	glBindTexture(GL_TEXTURE_2D_ARRAY, textureID);
-//	if (checkGlError()) {
-//		return;
-//	}
-//
-//	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, internalformat, textureWidth, textureHeight, textureDepth);
-//	if (checkGlError()) {
-//		return;
-//	}
-//
-//
-//	size_t pixelsLength = pixelSize * updateWidth * updateHeight;
-//	char *pixels = new char[pixelsLength];
-//	memset(pixels, 0, pixelsLength);
-//
-//	auto startMs = nowMillis();
-//	for (int i = 0; i < numFrames; i++) {
-//		glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0,
-//		                updateWidth, updateHeight, 1,
-//		                format, GL_UNSIGNED_BYTE,
-//		                pixels);
-//		if (checkGlError()) {
-//			return;
-//		}
-//	}
-//	auto endMs = nowMillis();
-//	double framePerSecond = (double) numFrames / (endMs - startMs) * 1000;
-//	double bytesPerSecond = pixelsLength * framePerSecond;
-//	double gbPerSecond = bytesPerSecond / 1000000000;
-//	std::cout
-//			<< "(GL_TEXTURE_2D_ARRAY) Texture width: " << textureWidth << ", texture height: " << textureHeight
-//			<< ", depth: "
-//			<< textureDepth
-//			<< ", update width: " << updateWidth << ", update height: " << updateHeight
-//			<< ", pixel size: " << pixelSize
-//			<< ", update length: " << pixelsLength
+void benchmarkFormat2DArray(const gl::uiVec3& dimensions, unsigned int pixelSize,
+                            const gl::uiVec3& updateDimensions,
+                            gl::TextureInternalFormat internalFormat, gl::TextureFormat format,
+                            int numFrames) {
+	auto texture = gl::Texture2DArray::create(internalFormat, dimensions);
+
+	size_t pixelsLength = pixelSize * updateDimensions.width * updateDimensions.height;
+	char *pixels = new char[pixelsLength];
+	memset(pixels, 0, pixelsLength);
+
+	auto startMs = nowMillis();
+	for (int i = 0; i < numFrames; i++) {
+		texture.subImage(
+				{0, 0, 0},
+				updateDimensions,
+				format,
+				(uint8_t*)pixels
+				);
+	}
+	auto endMs = nowMillis();
+	double framePerSecond = (double) numFrames / (endMs - startMs) * 1000;
+	double bytesPerSecond = pixelsLength * framePerSecond;
+	double gbPerSecond = bytesPerSecond / 1000000000;
+	std::cout
+			<< "(GL_TEXTURE_2D_ARRAY) Texture size: " << dimensions
+			<< ", update size: " << updateDimensions
+			<< ", pixel size: " << pixelSize
+			<< ", update length: " << pixelsLength
 //			<< ", internal format: " << internalformat
 //			<< ", format: " << format
-//			<< std::endl;
-//
-//	std::cout << "Frames/sec: " << framePerSecond << ", bytes/sec: " << bytesPerSecond << ", Gbytes/sec: "
-//	          << gbPerSecond << std::endl << std::endl;
-//
-//	glDeleteTextures(1, &textureID);
-//
-//}
+			<< std::endl;
+
+	std::cout << "Frames/sec: " << framePerSecond << ", bytes/sec: " << bytesPerSecond << ", Gbytes/sec: "
+	          << gbPerSecond << std::endl << std::endl;
+
+	texture.free();
+
+}
 //
 //void benchmarkFormat3DInitalStorage(unsigned int textureWidth, unsigned int textureHeight, unsigned int textureDepth,
 //                                    unsigned int pixelSize,
@@ -262,6 +247,9 @@ void benchmarkFormat(const gl::uiVec2& dimensions, unsigned int pixelSize,
 //
 //}
 
+class MyUniforms : public gl::UniformData{
+
+};
 int main() {
 	int windowWidth = 1280;
 	int windowHeight = 720;
@@ -301,9 +289,51 @@ int main() {
 //	std::cout<<o.data<<" "<<o.b.owner->data;
 
 //	benchmarkFormat3DInitalStorage(2048, 16384 / 16, 16, 1, 2018, 1024, GL_R8UI, GL_RED_INTEGER, 1000);
-//	benchmarkFormat2DArray(2048, 16384 / 16, 16, 1, 2018, 1024, GL_R8UI, GL_RED_INTEGER, 1000);
+//
 //	benchmarkFormat(2048, 16384, 4, 2048, 1024, GL_RGBA8, GL_BGRA, 1000);
-//	benchmarkFormat(2048, 16384, 1, 2018, 1024, GL_R8UI, GL_RED_INTEGER, 1000);
+	try{
+//		benchmarkFormat2DArray({2048, 16384 / 16, 16}, 1, {2018, 1024, 1 }, gl::TextureInternalFormat::R8ui, gl::TextureFormat::RedInteger, 1000);
+//		benchmarkFormat2DArray({2048, 16384 / 16, 16}, 4, {2018, 1024, 1 }, gl::TextureInternalFormat::RGBA8, gl::TextureFormat::BGRA, 1000);
+//		benchmarkFormat({2048, 16384}, 4, {2048, 1024}, gl::TextureInternalFormat::RGBA8, gl::TextureFormat::BGRA, 1000);
+//		benchmarkFormat({2048, 16384}, 1, {2018, 1024}, gl::TextureInternalFormat::R8ui, gl::TextureFormat::RedInteger, 1000);
+
+		const char* vertexCode = "#version 330 core\n"
+		                         "\n"
+		                         "// Input vertex data, different for all executions of this shader.\n"
+		                         "layout(location = 0) in vec2 pos;\n"
+		                         "\n"
+		                         "// Values that stay constant for the whole mesh.\n"
+		                         "\n"
+		                         "void main(){\n"
+		                         "\n"
+		                         "\t// Output position of the vertex, in clip space : MVP * position\n"
+		                         "\tgl_Position = vec4(pos, 0.0f, 1.0f);\n"
+		                         "\n"
+		                         "}";
+
+		const char* fragmentCode = ""
+							 "#version 330 core\n"
+					        "out vec4 Target0;\n"
+	                        "void main() {\n"
+						   "   Target0 = vec4(1.0f, 0.0f, 0.0f, 1.0f);"
+						   "}";
+		gl::Shader s = gl::Shader::createShader(vertexCode, fragmentCode);
+		std::vector<glm::vec2> vertices = {{1.0f, 1.0f}};
+		std::vector<int> elements = {0};
+
+		gl::VertexArray<glm::vec2, int> vertexArray = \
+				gl::VertexArray<glm::vec2, int>::create(vertices, elements);
+
+		auto positionsId = s.getAttribute("pos");
+		vertexArray.addAttrib(positionsId, 1, 0);
+		MyUniforms u;
+		s.render(u, vertexArray);
+		s.free();
+	}catch(gl::Exception& e){
+		std::cerr<<e.message<<std::endl;
+		glfwTerminate();
+		return -1;
+	}
 //	benchmarkFormat3D(2048, 16384 / 16, 16, 1, 2018, 1024, GL_R8UI, GL_RED_INTEGER, 1000);
 
 

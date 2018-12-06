@@ -13,7 +13,7 @@ find_package(GLM REQUIRED)
 find_package(GLU REQUIRED)
 find_package(GLFW REQUIRED)
 
-add_executable(uploadbench main.cpp gl/util.cpp gl/shader.cpp gl/texture.h gl/base.cpp gl/base.h gl/util.h gl/buffer.h gl/vertex_array.cpp gl/buffer.cpp gl/vec.h)
+add_executable(uploadbench main.cpp gl/util.cpp gl/shader.cpp gl/texture.h gl/base.cpp gl/base.h gl/util.h gl/buffer.h gl/vertex_array.cpp gl/buffer.cpp gl/vec.h gl/itexture.h)
 
 target_link_libraries(
         uploadbench
