@@ -54,10 +54,10 @@ namespace gl {
 		static void TexSubImage(const T &offset, const T &dimensions, GLenum format, GLenum type, GLvoid *data) {
 			throw "Unimplemented";
 		}
-
-	public:
 		Texture(GLuint textureId, TextureInternalFormat internalFormat, const T &dimensions)
 				: textureId(textureId), internalFormat(internalFormat), dimensions(dimensions) {}
+
+	public:
 
 		Texture(Texture&& other){
 			textureId = other.textureId;

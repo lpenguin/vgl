@@ -27,14 +27,13 @@ namespace gl {
 		GLuint objectId;
 		GLsizeiptr size;
 		const GLuint glTarget = static_cast<GLenum>(target);
-
-	public:
 		Buffer(GLuint objectId, GLsizeiptr size, BufferUsage usage, GLvoid* data) : NamedObject(objectId), size(size) {
 			bind();
 			glBufferData(glTarget, size, data, static_cast<GLenum>(usage));
 			gl::checkErrorAndThrow("glBufferData");
 
 		}
+	public:
 
 		Buffer(Buffer&& other) noexcept: NamedObject(other.objectId), size(other.size)  {}
 

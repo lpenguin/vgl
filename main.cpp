@@ -294,7 +294,7 @@ int main() {
 	try{
 //		benchmarkFormat2DArray({2048, 16384 / 16, 16}, 1, {2018, 1024, 1 }, gl::TextureInternalFormat::R8ui, gl::TextureFormat::RedInteger, 1000);
 //		benchmarkFormat2DArray({2048, 16384 / 16, 16}, 4, {2018, 1024, 1 }, gl::TextureInternalFormat::RGBA8, gl::TextureFormat::BGRA, 1000);
-//		benchmarkFormat({2048, 16384}, 4, {2048, 1024}, gl::TextureInternalFormat::RGBA8, gl::TextureFormat::BGRA, 1000);
+		benchmarkFormat({2048, 16384}, 4, {2048, 1024}, gl::TextureInternalFormat::RGBA8, gl::TextureFormat::BGRA, 1000);
 //		benchmarkFormat({2048, 16384}, 1, {2018, 1024}, gl::TextureInternalFormat::R8ui, gl::TextureFormat::RedInteger, 1000);
 
 		const char* vertexCode = "#version 330 core\n"
