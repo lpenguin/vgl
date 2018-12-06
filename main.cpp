@@ -317,12 +317,11 @@ int main() {
 	                        "void main() {\n"
 						   "   Target0 = vec4(1.0f, 0.0f, 0.0f, 1.0f);"
 						   "}";
-		gl::Shader s = gl::Shader::create(vertexCode, fragmentCode);
+		auto s = gl::Shader::create(vertexCode, fragmentCode);
 		std::vector<glm::vec2> vertices = {{1.0f, 1.0f}};
 		std::vector<int> elements = {0};
 
-		gl::VertexArray<glm::vec2, int> vertexArray = \
-				gl::VertexArray<glm::vec2, int>::create(vertices, elements);
+		auto vertexArray = gl::VertexArray<glm::vec2, int>::create(vertices, elements);
 
 		auto positionsId = s.getAttribute("pos");
 		vertexArray.addAttrib(positionsId, 1, 0);
