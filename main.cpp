@@ -317,7 +317,7 @@ int main() {
 	                        "void main() {\n"
 						   "   Target0 = vec4(1.0f, 0.0f, 0.0f, 1.0f);"
 						   "}";
-		gl::Shader s = gl::Shader::createShader(vertexCode, fragmentCode);
+		gl::Shader s = gl::Shader::create(vertexCode, fragmentCode);
 		std::vector<glm::vec2> vertices = {{1.0f, 1.0f}};
 		std::vector<int> elements = {0};
 

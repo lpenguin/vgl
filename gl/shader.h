@@ -60,8 +60,8 @@ namespace gl {
 
 		GLint getAttribute(const std::string& name) const;
 
-		static Shader createShader(const std::string &vertexShaderCode,
-		                                            const std::string &fragmentShaderCode);
+		static Shader create(const std::string &vertexShaderCode,
+		                     const std::string &fragmentShaderCode);
 
 		template<typename VertexType, typename ElementType>
 		void render(UniformData &data, VertexArray<VertexType, ElementType>& vertexArray){

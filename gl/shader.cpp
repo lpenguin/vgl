@@ -11,8 +11,8 @@ void gl::Shader::bindAttribs(UniformData &data) {
 	isBindedAttribs = true;
 }
 
-gl::Shader gl::Shader::createShader(const std::string &vertexShaderCode,
-                                                          const std::string &fragmentShaderCode) {
+gl::Shader gl::Shader::create(const std::string &vertexShaderCode,
+                              const std::string &fragmentShaderCode) {
 	auto objectId = gl::load_shaders_str(vertexShaderCode, fragmentShaderCode);
 	return gl::Shader(objectId);
 }
